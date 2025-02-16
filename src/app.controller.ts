@@ -1,13 +1,36 @@
-import { Controller, Delete, Get, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { AppService } from './app.service'
 
-@Controller()
+@Controller('movie')
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
-  @Delete()
-  getHello(): string {
-    return "반갑다 박박지현이다";
-    // return this.appService.getHello();
+  @Get()
+  getMovies(
+    @Query('title') title?: string
+  ) {
+    return this.appService.getManyMovies(title);
+  }
+
+  @Get(':id')
+  getMovie(@Param('id') id: string) {
+    return this.appService.getMovieById(+id);
+  }
+  @Post()
+  postMovie(@Body('title') title: string) {
+    return this.appService.createMovie(title);
+  }
+
+  @Patch(':id')
+  patchMovie(
+    @Param('id') id: string,
+    @Body('title') title: string
+  ) {
+    return this.appService.updateMovie(+id, title);
+  }
+
+  @Delete(':id')
+  deleteMovie(@Param('id') id: string) {
+    return this.appService.deleteMovie(+id);
   }
 }
