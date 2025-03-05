@@ -1,19 +1,19 @@
 import { Exclude, Expose, Transform } from "class-transformer";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
 
-export class Meta {
+export class BaseEntity {
   @CreateDateColumn()
-  CreatedAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  UpdatedAt: Date;
+  updatedAt: Date;
 
   @VersionColumn()
-  Version: number;
+  version: number;
 }
 
 @Entity()
-export class Movie {
+export class Movie extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -23,6 +23,4 @@ export class Movie {
   @Column()
   genre: string;
 
-  @Column(() => Meta)
-  meta: Meta;
 }
