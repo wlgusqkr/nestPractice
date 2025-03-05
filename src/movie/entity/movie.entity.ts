@@ -1,5 +1,6 @@
 import { Exclude, Expose, Transform } from "class-transformer";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from "typeorm";
+import { extend } from "joi";
+import { ChildEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, TableInheritance, UpdateDateColumn, VersionColumn } from "typeorm";
 
 export class BaseEntity {
   @CreateDateColumn()
@@ -12,8 +13,16 @@ export class BaseEntity {
   version: number;
 }
 
+// movie / series -> Content
+// runtime / seriesCount
 @Entity()
-export class Movie extends BaseEntity {
+@TableInheritance({
+  column: {
+    type: 'varchar',
+    name: 'type'
+  }
+})
+export class Content extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -24,3 +33,15 @@ export class Movie extends BaseEntity {
   genre: string;
 
 }
+@ChildEntity()
+export class Movie extends Content {
+  @Column()
+  runtime: number;
+}
+
+@ChildEntity()
+export class Serise extends Content {
+
+  @Column()
+  seriseCount: number;
+} 
