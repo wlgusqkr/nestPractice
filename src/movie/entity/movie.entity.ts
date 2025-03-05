@@ -20,7 +20,8 @@ export class Movie extends BaseTable {
   genre: string;
 
   @OneToOne(
-    () => MovieDetail
+    () => MovieDetail,
+    movie => movie.id
   )
   @JoinColumn()
   detail: MovieDetail;
