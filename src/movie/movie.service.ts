@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
-import { Movie, Serise } from './entity/movie.entity';
+import { Movie, } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import { MovieDetail } from './entity/movie-detail.entity';
 
 @Injectable()
 export class MovieService {
@@ -12,8 +13,8 @@ export class MovieService {
   constructor(
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>,
-    @InjectRepository(Serise)
-    private readonly seriseRepository: Repository<Serise>
+    @InjectRepository(MovieDetail)
+    private readonly movieDetailRepository: Repository<MovieDetail>,
   ) {
   }
   getManyMovies(title?: string) {
@@ -34,25 +35,17 @@ export class MovieService {
     return movie;
   }
   async createMovie(createMovieDto: CreateMovieDto) {
-    const movie = await this.movieRepository.save(createMovieDto)
-    return movie;
-  }
-
-  async createSerise(createMovieDto: CreateMovieDto) {
-    const movie = await this.seriseRepository.save({
-      ...createMovieDto,
-      seriseCount: 70,
+    const movieDetail = await this.movieDetailRepository.save({
+      detail: createMovieDto.detail,
     })
-    return movie;
-  }
-
-  async createMovie2(createMovieDto: CreateMovieDto) {
     const movie = await this.movieRepository.save({
-      ...createMovieDto,
-      runtime: 100,
+      title: createMovieDto.title,
+      genre: createMovieDto.genre,
+      detail: movieDetail
     })
     return movie;
   }
+
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
 

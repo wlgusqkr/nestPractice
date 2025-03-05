@@ -3,7 +3,8 @@ import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import { Content, Movie, Serise } from './movie/entity/movie.entity';
+import { Movie } from './movie/entity/movie.entity';
+import { MovieDetail } from './movie/entity/movie-detail.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,8 +29,7 @@ import { Content, Movie, Serise } from './movie/entity/movie.entity';
         database: configService.get<string>('DB_DATABASE'),
         entities: [
           Movie,
-          Serise,
-          Content,
+          MovieDetail
         ],
         synchronize: true,
       }),

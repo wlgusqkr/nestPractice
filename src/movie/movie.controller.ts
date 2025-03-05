@@ -19,21 +19,12 @@ export class MovieController {
   getMovie(@Param('id') id: string) {
     return this.movieService.getMovieById(+id);
   }
+
   @Post()
   postMovie(@Body() body: CreateMovieDto) {
     return this.movieService.createMovie(body);
   }
 
-  @Post('/movie')
-  postMovie2(@Body() body: CreateMovieDto) {
-    return this.movieService.createMovie2(body);
-  }
-
-  @Post('/serise')
-  postSerise(@Body() body: CreateMovieDto) {
-    return this.movieService.createSerise(body);
-
-  }
   @Patch(':id')
   patchMovie(
     @Param('id') id: string,
