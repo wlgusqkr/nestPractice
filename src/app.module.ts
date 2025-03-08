@@ -7,6 +7,8 @@ import { Movie } from './movie/entity/movie.entity';
 import { MovieDetail } from './movie/entity/movie-detail.entity';
 import { DirectorModule } from './director/director.module';
 import { Director } from './director/entitiy/director.entity';
+import { GenreModule } from './genre/genre.module';
+import { Genre } from './genre/entities/genre.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,14 +34,16 @@ import { Director } from './director/entitiy/director.entity';
         entities: [
           Movie,
           MovieDetail,
-          Director
+          Director,
+          Genre
         ],
         synchronize: true,
       }),
       inject: [ConfigService]
     }),
     MovieModule,
-    DirectorModule
+    DirectorModule,
+    GenreModule,
   ]
 })
 export class AppModule { }
