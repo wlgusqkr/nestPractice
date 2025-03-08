@@ -5,12 +5,7 @@ import { UpdateDirectorDto } from './dto/update-director.dto';
 
 @Controller('director')
 export class DirectorController {
-  constructor(private readonly directorService: DirectorService) {}
-
-  @Post()
-  create(@Body() createDirectorDto: CreateDirectorDto) {
-    return this.directorService.create(createDirectorDto);
-  }
+  constructor(private readonly directorService: DirectorService) { }
 
   @Get()
   findAll() {
@@ -21,6 +16,12 @@ export class DirectorController {
   findOne(@Param('id') id: string) {
     return this.directorService.findOne(+id);
   }
+
+  @Post()
+  create(@Body() createDirectorDto: CreateDirectorDto) {
+    return this.directorService.create(createDirectorDto);
+  }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDirectorDto: UpdateDirectorDto) {

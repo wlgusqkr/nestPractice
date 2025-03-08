@@ -1,26 +1,67 @@
 import { Injectable } from '@nestjs/common';
 import { CreateDirectorDto } from './dto/create-director.dto';
 import { UpdateDirectorDto } from './dto/update-director.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Director } from './entitiy/director.entity';
 
 @Injectable()
 export class DirectorService {
+  constructor(
+    @InjectRepository(Director)
+    private readonly directorRepository: Repository<Director>,
+  ) {
+
+  }
   create(createDirectorDto: CreateDirectorDto) {
-    return 'This action adds a new director';
+    return this.directorRepository.save(createDirectorDto);
   }
 
   findAll() {
-    return `This action returns all director`;
+    return this.directorRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} director`;
+    return this.directorRepository.findOne({
+      where: {
+        id,
+      }
+    });
   }
 
-  update(id: number, updateDirectorDto: UpdateDirectorDto) {
-    return `This action updates a #${id} director`;
+  async update(id: number, updateDirectorDto: UpdateDirectorDto) {
+    const director = await this.directorRepository.findOne({
+      where: {
+        id
+      }
+    })
+    if (!director) {
+      throw Error('감독님이 없습니다.');
+    }
+    await this.directorRepository.update({ id },
+      { ...updateDirectorDto }
+    )
+    const newDirector = await this.directorRepository.findOne({
+      where: {
+        id
+      }
+    })
+    return newDirector;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} director`;
+  async remove(id: number) {
+
+    const director = await this.directorRepository.findOne({
+      where: {
+        id
+      }
+    })
+
+    if (!director) {
+      throw Error('감독님이 없습니다.');
+    }
+
+    await this.directorRepository.delete(id);
+    return id;
   }
 }

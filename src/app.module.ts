@@ -6,6 +6,7 @@ import * as Joi from 'joi';
 import { Movie } from './movie/entity/movie.entity';
 import { MovieDetail } from './movie/entity/movie-detail.entity';
 import { DirectorModule } from './director/director.module';
+import { Director } from './director/entitiy/director.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,7 +31,8 @@ import { DirectorModule } from './director/director.module';
         database: configService.get<string>('DB_DATABASE'),
         entities: [
           Movie,
-          MovieDetail
+          MovieDetail,
+          Director
         ],
         synchronize: true,
       }),
