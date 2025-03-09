@@ -12,12 +12,12 @@ export class MovieController {
   getMovies(
     @Query('title') title?: string
   ) {
-    return this.movieService.getManyMovies(title);
+    return this.movieService.findAll(title);
   }
 
   @Get(':id')
   getMovie(@Param('id') id: string) {
-    return this.movieService.getMovieById(+id);
+    return this.movieService.findOne(+id);
   }
 
   @Post()
