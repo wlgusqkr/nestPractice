@@ -144,104 +144,93 @@ export class MovieService {
 
   async updateMovie(id: number, updateMovieDto: UpdateMovieDto) {
 
-    const movie = await this.movieRepository.findOne({
-      where: {
-        id,
-      },
-      relations: ['detail', 'genres']
-    })
+    const qr = await this.dataSource.createQueryRunner();
+    qr.connect(); qr.startTransaction();
 
-    if (!movie) {
-      throw new NotFoundException('존재하지 않는 ID입니다')
-    }
-
-    const { detail, directorId, genreIds, ...movieRest } = updateMovieDto;
-
-    let newDirector;
-    if (directorId) {
-      const director = await this.directorRepository.findOne({
+    try {
+      const movie = await qr.manager.findOne(Movie, {
         where: {
-          id: directorId
-        }
-      })
-      if (!director) {
-        throw new NotFoundException("존재하지 않는 감독입니다.")
-      }
-      newDirector = director;
-    }
-
-    let newGenres;
-    if (genreIds) {
-      const genre = await this.genreRepository.find({
-        where: {
-          id: In(updateMovieDto.genreIds)
-        }
+          id,
+        },
+        relations: ['detail', 'genres']
       })
 
-      if (genre.length !== updateMovieDto.genreIds.length) {
-        throw new NotFoundException('존재하지 않는 장르가 있습니다!')
+      if (!movie) {
+        throw new NotFoundException('존재하지 않는 ID입니다')
       }
-      newGenres = genre;
-    }
 
+      const { detail, directorId, genreIds, ...movieRest } = updateMovieDto;
 
-    const movieUpdateFields = {
-      ...movieRest,
-      ...(newDirector && { director: newDirector })
-    }
+      let newDirector;
+      if (directorId) {
+        const director = await qr.manager.findOne(Director, {
+          where: {
+            id: directorId
+          }
+        })
+        if (!director) {
+          throw new NotFoundException("존재하지 않는 감독입니다.")
+        }
+        newDirector = director;
+      }
 
-    await this.movieRepository.createQueryBuilder()
-      .update(Movie)
-      .set(movieUpdateFields)
-      .where('id = :id', { id })
-      .execute()
+      let newGenres;
+      if (genreIds) {
+        const genre = await qr.manager.find(Genre, {
+          where: {
+            id: In(updateMovieDto.genreIds)
+          }
+        })
 
-    // movie 테이블에 director의 연결을 바꾸고 name, title를 업데이트하고
-    // detail과 genre는 다른 테이블을 바꿔야한다.
-    // await this.movieRepository.update(
-    //   { id },
-    //   movieUpdateFields
-    // )
+        if (genre.length !== updateMovieDto.genreIds.length) {
+          throw new NotFoundException('존재하지 않는 장르가 있습니다!')
+        }
+        newGenres = genre;
+      }
 
-    if (detail) {
-      await this.movieDetailRepository.createQueryBuilder()
-        .update(MovieDetail)
-        .set({ detail })
+      const movieUpdateFields = {
+        ...movieRest,
+        ...(newDirector && { director: newDirector })
+      }
+
+      await qr.manager.createQueryBuilder()
+        .update(Movie)
+        .set(movieUpdateFields)
         .where('id = :id', { id })
         .execute()
-      // await this.movieDetailRepository.update(
-      //   { id: movie.detail.id },
-      //   { detail }
-      // )
+
+      if (detail) {
+        await qr.manager.createQueryBuilder()
+          .update(MovieDetail)
+          .set({ detail })
+          .where('id = :id', { id })
+          .execute()
+      }
+
+      // 원래는 무비를 찾아서 장르를 바꿔치기했는데 QueryBuilder로 한번에 가능
+      if (newGenres) {
+        await qr.manager.createQueryBuilder()
+          .relation(Movie, 'genres')
+          .of(id)
+          .addAndRemove(newGenres.map(genre => genre.id), movie.genres.map(genre => genre.id))
+      }
+
+      await qr.commitTransaction();
+
+      return await this.movieRepository.findOne({
+        where: {
+          id
+        },
+        relations: ['detail', 'director', 'genres']
+      });
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
     }
-
-    // 원래는 무비를 찾아서 장르를 바꿔치기했는데 QueryBuilder로 한번에 가능
-    if (newGenres) {
-      await this.movieRepository.createQueryBuilder()
-        .relation(Movie, 'genres')
-        .of(id)
-        .addAndRemove(newGenres.map(genre => genre.id), movie.genres.map(genre => genre.id))
-    }
-    // const newMovie = await this.movieRepository.findOne({
-    //   where: {
-    //     id
-    //   },
-    //   relations: ['detail', 'director']
-    // })
-
-    // if (newMovie) {
-    //   newMovie.genres = newGenres;
-
-    //   await this.movieRepository.save(newMovie);
-
-    // }
-
-    return this.movieRepository.findOne({
-      where: {
-        id
-      },
-      relations: ['detail', 'director', 'genres']
-    });
+    // movie 를 찾고 directorId를 찾고 Genres를 찾고 updateField를 만들어서 movie 테이블을 업데이트
+    // director와 genre가 있다면 테이블을 바꿔야함.
   }
 
   async deleteMovie(id: number) {
